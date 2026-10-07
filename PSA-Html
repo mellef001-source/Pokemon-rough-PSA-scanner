@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gratis Pokémon PSA Scanner</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        video, canvas { width: 100%; max-width: 400px; border-radius: 8px; margin-top: 10px; background: #000; }
+        button { background: #ffcb05; border: none; color: #3c5aa6; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; margin: 10px 5px; }
+        button:hover { background: #e6b800; }
+        .preview-box { display: flex; justify-content: space-around; margin-top: 20px; }
+        .preview { width: 45%; border: 2px dashed #ccc; border-radius: 5px; padding: 5px; height: 150px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #666; background-size: cover; background-position: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pokémon Card Pre-Grader</h1>
+    <p>Scan gratis de voor- en achterkant van je kaart.</p>
+    
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    
+    <br>
+    <button id="snapFront">📷 Scan Voorkant</button>
+    <button id="snapBack">📷 Scan Achterkant</button>
+    <button id="analyzeBtn" style="background:#4caf50; color:white; display:none;">🔍 Analyseer Imperfecties</button>
+
+    <div class="preview-box">
+        <div id="viewFront" class="preview">Voorkant voorbeeld</div>
+        <div id="viewBack" class="preview">Achterkant voorbeeld</div>
+    </div>
+    
+    <h2 id="result" style="margin-top:20px; color:#3c5aa6;"></h2>
+</div>
+
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const snapFront = document.getElementById('snapFront');
+    const snapBack = document.getElementById('snapBack');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    let frontImg = null, backImg = null;
+
+    // Camera starten
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => { video.srcObject = stream; })
+        .catch(err => { alert("Cameratoegang geweigerd of niet beschikbaar."); });
+
+    function capture(side) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        
+        if(side === 'front') {
+            frontImg = dataUrl;
+            document.getElementById('viewFront').style.backgroundImage = `url(${dataUrl})`;
+            document.getElementById('viewFront').innerText = "";
+        } else {
+            backImg = dataUrl;
+            document.getElementById('viewBack').style.backgroundImage = `url(${dataUrl})`;
+            document.getElementById('viewBack').innerText = "";
+        }
+
+        if(frontImg && backImg) { analyzeBtn.style.display = "inline-block"; }
+    }
+
+    snapFront.addEventListener('click', () => capture('front'));
+    snapBack.addEventListener('click', () => capture('back'));
+
+    analyzeBtn.addEventListener('click', () => {
+        document.getElementById('result').innerText = "Scannen naar imperfecties...";
+        
+        // HIER KOPPEL JE LATER JE AI MODEL. VOOR NU EEN SIMULATIE:
+        setTimeout(() => {
+            const mockPSA = Math.floor(Math.random() * 3) + 8; // Genereert een 8, 9 of 10
+            document.getElementById('result').innerHTML = `Geschatte PSA Score: <strong>${mockPSA}</strong><br><small style="color:red;">Centrering: 60/40 | Lichte whitening op achterrand gevonden.</small>`;
+        }, 2000);
+    });
+</script>
+
+</body>
+</html>
